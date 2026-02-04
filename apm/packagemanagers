@@ -42,7 +42,7 @@ show_warning() {
     esac
 
     printf 'Warning: "%s" usage detected!\n' "$prog" >&2
-    printf 'While you can continue using this command on ObsidianOS, it is recommended to directly use %b instead, as ObsidianOS is Arch-based!\n\n' "$suggestion" >&2
+    printf 'While you can continue using this command on your system, it is recommended to directly use %b instead, as your system is Arch-based!\n\n' "$suggestion" >&2
     printf 'Transferring you over to pacman...\n' >&2
     sleep 1.2
 }
