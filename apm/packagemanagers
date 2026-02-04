@@ -1,0 +1,233 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+prog="$(basename "$0")"
+action="${1:-}"
+VERSION="1.0.0"
+
+detect_distro() {
+    if [[ -f /etc/os-release ]]; then
+        . /etc/os-release
+        echo "$ID"
+    else
+        echo "unknown"
+    fi
+}
+
+show_warning() {
+    if [[ "$prog" == "pacman" ]] || [[ "${OBSIDIAN_PM_QUIET:-0}" == "1" ]]; then
+        return
+    fi
+
+    PACMAN_COLOR="\e[38;2;120;200;120m"
+    YAY_COLOR="\e[38;2;120;200;200m"
+    RESET_COLOR="\e[0m"
+
+    case "$action" in
+        install)
+            suggestion="${PACMAN_COLOR}\"pacman -S ${@:2}\"${RESET_COLOR} or ${YAY_COLOR}\"yay -S ${@:2}\"${RESET_COLOR}"
+            ;;
+        remove|uninstall)
+            suggestion="${PACMAN_COLOR}\"pacman -Rns ${@:2}\"${RESET_COLOR} or ${YAY_COLOR}\"yay -Rns ${@:2}\"${RESET_COLOR}"
+            ;;
+        update|upgrade)
+            suggestion="${PACMAN_COLOR}\"pacman -Syu\"${RESET_COLOR} or ${YAY_COLOR}\"arch-update\"${RESET_COLOR}"
+            ;;
+        search)
+            suggestion="${PACMAN_COLOR}\"pacman -Ss ${@:2}\"${RESET_COLOR} or ${YAY_COLOR}\"yay -Ss ${@:2}\"${RESET_COLOR}"
+            ;;
+        *)
+            suggestion="${PACMAN_COLOR}\"pacman/yay ${@:2}\"${RESET_COLOR}"
+            ;;
+    esac
+
+    printf 'Warning: "%s" usage detected!\n' "$prog" >&2
+    printf 'While you can continue using this command on ObsidianOS, it is recommended to directly use %b instead, as ObsidianOS is Arch-based!\n\n' "$suggestion" >&2
+    printf 'Transferring you over to pacman...\n' >&2
+    sleep 1.2
+}
+
+is_modify=false
+case "$action" in
+    install|remove|uninstall|update|upgrade|clean|cleanup) is_modify=true ;;
+esac
+
+if $is_modify && [[ $EUID -ne 0 ]]; then
+    if [[ -z "${SUDO_USER:-}" ]]; then
+        echo "Error: This command must be run with sudo. Try: sudo $prog $*" >&2
+    else
+        echo "error: you cannot perform this operation unless you are root." >&2
+    fi
+    exit 1
+fi
+
+if $is_modify && [[ -z "${SUDO_USER:-}" ]] && [[ $EUID -eq 0 ]]; then
+    echo "Warning: Running as root without sudo context. Consider using: sudo $prog $*" >&2
+fi
+
+backend="pacman"
+if command -v yay >/dev/null 2>&1; then
+    backend="yay"
+fi
+
+run_yay_as_user() {
+    if [[ -z "${SUDO_USER:-}" ]]; then
+        echo "Error: cannot determine original user (SUDO_USER missing)." >&2
+        exit 1
+    fi
+    exec sudo -u "$SUDO_USER" -- env HOME="$(getent passwd "$SUDO_USER" | cut -d: -f6)" yay "$@"
+}
+
+case "$action" in
+    install)
+        show_warning
+        shift
+        if [[ "$backend" == "yay" ]]; then
+            if [[ $EUID -eq 0 ]]; then
+                all_in_repo=true
+                for pkgname in "$@"; do
+                    if ! pacman -Si "$pkgname" >/dev/null 2>&1; then
+                        all_in_repo=false
+                        break
+                    fi
+                done
+
+                if $all_in_repo; then
+                    exec pacman -S --needed --noconfirm "$@"
+                else
+                    run_yay_as_user -S --needed "$@"
+                fi
+            else
+                exec yay -S --needed "$@"
+            fi
+        else
+            exec pacman -S --needed --noconfirm "$@"
+        fi
+        ;;
+    remove|uninstall)
+        show_warning
+        shift
+        if [[ "$backend" == "yay" ]]; then
+            if [[ $EUID -eq 0 ]]; then
+                run_yay_as_user -Rns "$@"
+            else
+                exec yay -Rns "$@"
+            fi
+        else
+            exec pacman -Rns --noconfirm "$@"
+        fi
+        ;;
+    update|upgrade)
+        show_warning
+        if [[ "$backend" == "yay" ]]; then
+            if [[ $EUID -eq 0 ]]; then
+                run_yay_as_user -Syu
+            else
+                exec yay -Syu
+            fi
+        else
+            exec pacman -Syu --noconfirm
+        fi
+        ;;
+    clean|cleanup)
+        show_warning
+        if [[ "$backend" == "yay" ]]; then
+            if [[ $EUID -eq 0 ]]; then
+                run_yay_as_user -Sc
+            else
+                exec yay -Sc
+            fi
+        else
+            exec pacman -Sc --noconfirm
+        fi
+        ;;
+    search)
+        show_warning
+        shift
+        if [[ "$backend" == "yay" ]]; then
+            exec yay -Ss "$@"
+        else
+            exec pacman -Ss "$@"
+        fi
+        ;;
+    info|show)
+        show_warning
+        shift
+        if [[ "$backend" == "yay" ]]; then
+            exec yay -Si "$@"
+        else
+            exec pacman -Si "$@"
+        fi
+        ;;
+    list)
+        show_warning
+        if [[ "$backend" == "yay" ]]; then
+            exec yay -Q
+        else
+            exec pacman -Q
+        fi
+        ;;
+    autoremove)
+        show_warning
+        if [[ $EUID -ne 0 ]]; then
+            echo "error: autoremove requires root privileges." >&2
+            exit 1
+        fi
+        if [[ "$backend" == "yay" ]]; then
+            run_yay_as_user -Qdtq
+            echo "Tip: Use 'pacman -Qdtq | pacman -Rns -' to remove orphaned packages" >&2
+        else
+            pacman -Qdtq | pacman -Rns - --noconfirm || echo "No orphaned packages found"
+        fi
+        ;;
+    version|--version|-v)
+        echo "Aliased Package Managers by Obsidian v$VERSION"
+        ;;
+    help|--help|-h)
+        cat << EOF
+Aliased Package Managers v$VERSION
+
+Usage: $prog <command> [options]
+
+Commands:
+  install <pkg...>      Install package(s)
+  remove|uninstall      Remove package(s)
+  update|upgrade        Update all packages
+  search <query>        Search for packages
+  info|show <pkg...>    Show package information
+  list                  List installed packages
+  clean|cleanup         Clean package cache
+  autoremove            Remove orphaned packages
+  version               Show version information
+  help                  Show this help message
+
+Environment Variables:
+  OBSIDIAN_PM_QUIET     Set to '1' to suppress warning messages
+
+Examples:
+  sudo $prog install vim git
+  sudo $prog search firefox
+  $prog list
+  $prog info bash
+
+Note: Package modification commands (install, remove, update, etc.) require sudo.
+EOF
+        ;;
+    "")
+        echo "Usage: $prog <command> [options]" >&2
+        echo "Try '$prog help' for more information" >&2
+        exit 2
+        ;;
+    *)
+        show_warning
+        if [[ "$backend" == "yay" ]]; then
+            if [[ $EUID -eq 0 ]]; then
+                run_yay_as_user "$@"
+            else
+                exec yay "$@"
+            fi
+        else
+            exec pacman "$@"
+        fi
+        ;;
+esac
