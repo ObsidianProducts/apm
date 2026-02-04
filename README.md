@@ -166,10 +166,7 @@ APM acts as a transparent wrapper around `pacman` and `yay`:
 
 1. **Command Detection** - Identifies which package manager alias you used
 2. **Backend Selection** - Checks if `yay` is available; uses `pacman` as fallback
-3. **Smart Delegation** - Routes commands appropriately:
-   - Repository packages → `pacman` (faster, no privileges needed)
-   - AUR packages → `yay` (with proper user context)
-4. **User Education** - Warns non-native command usage and suggests native alternatives
+3. **Helping new users** - Warns non-native command usage and suggests native alternatives (unless quiet is enabled)
 
 ## Environment Variables
 
@@ -187,8 +184,6 @@ APM is designed for easy integration into Arch-based distributions. Distro maint
 3. **Customize installation paths** - Use `APM_INSTALL_PATH` during packaging to place files in distro-specific locations
 4. **Enable quiet mode by default** - Set `OBSIDIAN_PM_QUIET=1` in system-wide configs for experienced users
 5. **Add shell completions** - Distribute bash/zsh/fish completion scripts (future feature)
-
-For distro packaging questions or integration support, open an issue on the repository.
 
 ## Future Plans
 
