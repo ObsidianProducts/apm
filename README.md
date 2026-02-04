@@ -3,12 +3,9 @@
 A smart shell wrapper for Arch Linux package managers that acts as an alias layer, redirecting you to both `pacman` and `yay` when using these aliases.
 
 ## Notable features:
-- **Smart Backend Detection** - Automatically uses `yay` if available, falls back to `pacman`
-- **Educational Friction** - Gently guides users toward native `pacman`/`yay` commands
-- **Quiet Mode** - Suppress warnings for experienced users
-- **User Context Preservation** - Maintains proper user permissions when using AUR helpers
-- **Extended Commands** - Beyond basic package management (search, info, list, cleanup, autoremove)
-- **Future-Proof** - Designed for multi-distro expansion
+- **Smart Backend Detection** - Automatically uses `yay` if available, falls back to `pacman`.
+- **Quiet Mode** - Suppress warnings for experienced users.
+- **User Context Preservation** - Maintains proper user permissions when using AUR helpers.
 
 ## Installation
 
