@@ -5,6 +5,7 @@ prog="$(basename "$0")"
 action="${1:-}"
 VERSION="1.0.0"
 
+# for future me or others, this can be used to detect the current distro
 detect_distro() {
     if [[ -f /etc/os-release ]]; then
         . /etc/os-release
