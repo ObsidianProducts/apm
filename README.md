@@ -11,7 +11,7 @@ A smart shell wrapper for Arch Linux package managers that acts as an alias laye
 
 ### Prerequisites
 
-- Arch Linux or Arch-based distribution
+- Arch Linux or any other distribution that uses `pacman` as it's package manager.
 - `bash` 4.0+ (or any other shell)
 - `sudo` access
 
