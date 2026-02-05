@@ -16,7 +16,7 @@ detect_distro() {
 }
 
 show_warning() {
-    if [[ "$prog" == "pacman" ]] || [[ "${OBSIDIAN_PM_QUIET:-0}" == "1" ]]; then
+    if [[ "$prog" == "pacman" ]] || [[ "${APM_QUIET:-0}" == "1" ]]; then
         return
     fi
 
@@ -94,7 +94,7 @@ case "$action" in
                 done
 
                 if $all_in_repo; then
-                    exec pacman -S --needed --noconfirm "$@"
+                    exec pacman -S --needed "$@"
                 else
                     run_yay_as_user -S --needed "$@"
                 fi
@@ -102,7 +102,7 @@ case "$action" in
                 exec yay -S --needed "$@"
             fi
         else
-            exec pacman -S --needed --noconfirm "$@"
+            exec pacman -S --needed "$@"
         fi
         ;;
     remove|uninstall)
@@ -115,7 +115,7 @@ case "$action" in
                 exec yay -Rns "$@"
             fi
         else
-            exec pacman -Rns --noconfirm "$@"
+            exec pacman -Rns "$@"
         fi
         ;;
     update|upgrade)
@@ -178,7 +178,7 @@ case "$action" in
             run_yay_as_user -Qdtq
             echo "Tip: Use 'pacman -Qdtq | pacman -Rns -' to remove orphaned packages" >&2
         else
-            pacman -Qdtq | pacman -Rns - --noconfirm || echo "No orphaned packages found"
+            pacman -Qdtq | pacman -Rns - || echo "No orphaned packages found"
         fi
         ;;
     version|--version|-v)
@@ -203,7 +203,7 @@ Commands:
   help                  Show this help message
 
 Environment Variables:
-  OBSIDIAN_PM_QUIET     Set to '1' to suppress warning messages
+  APM_QUIET     Set to '1' to suppress warning messages
 
 Examples:
   sudo $prog install vim git
