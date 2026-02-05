@@ -125,17 +125,17 @@ To suppress these warnings permanently, add the following to your shell configur
 
 **For Bash** (`~/.bashrc`):
 ```bash
-export OBSIDIAN_PM_QUIET=1
+export APM_QUIET=1
 ```
 
 **For Zsh** (`~/.zshrc`):
 ```bash
-export OBSIDIAN_PM_QUIET=1
+export APM_QUIET=1
 ```
 
 **For Fish** (`~/.config/fish/config.fish`):
 ```fish
-set -gx OBSIDIAN_PM_QUIET 1
+set -gx APM_QUIET 1
 ```
 
 After adding it, restart your shell or run `source ~/.bashrc` (or equivalent for your shell).
@@ -172,7 +172,7 @@ APM acts as a transparent wrapper around `pacman` and `yay`:
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `OBSIDIAN_PM_QUIET` | `0` | Set to `1` to suppress warning messages |
+| `APM_QUIET` | `0` | Set to `1` to suppress warning messages |
 | `APM_INSTALL_PATH` | `/usr/local/bin/obsidian/aliases` | Custom installation path |
 
 ## Distro Integration
@@ -182,7 +182,7 @@ APM is designed for easy integration into Arch-based distributions. Distro maint
 1. **Package APM in repositories** - Include in official or community repositories for easy installation
 2. **Set as default in shell configs** - Pre-enable in default shell profiles (e.g., `/etc/skel/.bashrc`)
 3. **Customize installation paths** - Use `APM_INSTALL_PATH` during packaging to place files in distro-specific locations
-4. **Enable quiet mode by default** - Set `OBSIDIAN_PM_QUIET=1` in system-wide configs for experienced users
+4. **Enable quiet mode by default** - Set `APM_QUIET=1` in system-wide configs for experienced users
 5. **Add shell completions** - Distribute bash/zsh/fish completion scripts (future feature)
 
 ## Future Plans
