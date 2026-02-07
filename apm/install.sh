@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
+# this has been recommented for those inspecting the script(s), for better implementations and modifications. (the previous comments were sloppy)
 set -euo pipefail
 
 INSTALL_PATH="${APM_INSTALL_PATH:-/usr/local/bin/obsidian/aliases}"
 SCRIPT_NAME="packagemanagers"
 ALIASES=("pkg" "apt" "dnf")
 
-# Colors for output
+# color variables
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 RESET='\033[0m'
 
+# sudo things
 path_requires_root() {
     local path="$1"
     local root_paths=("/usr" "/etc" "/opt" "/bin" "/sbin" "/lib")
@@ -34,6 +36,7 @@ check_and_request_root() {
     fi
 }
 
+# friendly reminder to ensure "packagemanagers" is within the same directory as install.sh and your current terminal dir
 if [[ ! -f "$SCRIPT_NAME" ]]; then
     echo -e "${RED}Error: '$SCRIPT_NAME' not found in current directory${RESET}" >&2
     echo "Make sure you're running this from the APM repository root." >&2
@@ -42,15 +45,15 @@ fi
 
 check_and_request_root "$@"
 
-echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
-echo -e "${BLUE}APM - Aliased Package Managers Installer${RESET}"
-echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+echo -e "${BLUE}Aliased Package Managers${RESET}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
 echo ""
 echo -e "Install path: ${YELLOW}$INSTALL_PATH${RESET}"
 echo -e "Aliases to create: ${YELLOW}${ALIASES[*]}${RESET}"
 echo ""
 
-# Create installation directory
+# installation stuff
 echo -e "${BLUE}→${RESET} Creating installation directory..."
 mkdir -p "$INSTALL_PATH"
 if [[ $? -eq 0 ]]; then
@@ -60,7 +63,7 @@ else
     exit 1
 fi
 
-# Copy script
+
 echo -e "${BLUE}→${RESET} Installing script..."
 cp "$SCRIPT_NAME" "$INSTALL_PATH/$SCRIPT_NAME"
 if [[ $? -ne 0 ]]; then
@@ -93,9 +96,9 @@ for alias in "${ALIASES[@]}"; do
 done
 
 echo ""
-echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
 echo -e "${GREEN}Installation complete!${RESET}"
-echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
 echo ""
 echo -e "Next steps:"
 echo -e "  1. Test the installation: ${YELLOW}pkg --help${RESET}"
